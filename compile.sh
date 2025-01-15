@@ -1,0 +1,1 @@
+javac --module-path lib --add-modules javafx.controls,javafx.graphics -d bin $(find src -name '*.java')

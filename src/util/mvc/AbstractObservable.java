@@ -3,7 +3,7 @@ package util.mvc;
 import java.util.List;
 import java.util.ArrayList;
 
-public class AbstractModel implements Model {
+public class AbstractObservable implements Observable {
     private List<Observer> obeservers = new ArrayList<>();
 
     @Override

@@ -1,5 +1,5 @@
 package util.mvc;
 
 public interface Observer {
-    public void update(Model source);
+    public void update(Observable source);
 }

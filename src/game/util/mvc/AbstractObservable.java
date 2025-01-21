@@ -1,4 +1,4 @@
-package util.mvc;
+package game.util.mvc;
 
 import java.util.List;
 import java.util.ArrayList;

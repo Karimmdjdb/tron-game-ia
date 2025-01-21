@@ -19,4 +19,18 @@ public class Position {
     public int getCordY() {
         return cord_y;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if(other instanceof Position) {
+            Position other_position = (Position) other;
+            return other_position.cord_x == this.cord_x && other_position.cord_y == this.cord_y;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return cord_x + cord_y;
+    }
 }

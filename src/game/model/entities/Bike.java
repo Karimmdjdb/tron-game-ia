@@ -1,8 +1,14 @@
 package game.model.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import game.model.platform.*;
 
-public class Bike extends Entity {
+public class Bike extends game.util.mvc.AbstractObservable {
+
+    Position head;
+    List<Position> streak;
 
     public enum Direction {
         LEFT,
@@ -11,20 +17,19 @@ public class Bike extends Entity {
         DOWN
     }
 
-    public Bike() {
-        super();
+    public Bike(Position initial_position) {
+        head = initial_position;
+        streak = new ArrayList<>();
     }
 
-    public Bike(int cord_x, int cord_y) {
-        super(cord_x, cord_y);
-    }
-
-    public Bike(Position position) {
-        super(position);
+    public Position getHeadPosition() {
+        return head;
     }
 
     public void move(Direction dir) {
-        int new_cord_x = cord_x, new_cord_y = cord_y;
+
+        // calcul de la nouvelle position
+        int new_cord_x = head.getCordX(), new_cord_y = head.getCordY();
         switch(dir) {
             case LEFT:
                 new_cord_x++;
@@ -41,13 +46,14 @@ public class Bike extends Entity {
             default:
                 break;
         }
+
         Platform platform = Platform.getInstance();
+
+        // si la nouvelle position est valide alors on effectue le mouvement
         Position new_position = Position.from(new_cord_x, new_cord_y);
         if(platform.isPositionValid(new_position)) {
-            Position old_position = Position.from(cord_x, cord_y);
-            platform.moveEntity(old_position, new_position);
-            cord_x = new_cord_x;
-            cord_y = new_cord_y;
+            streak.add(head);
+            head = new_position;
         }
     }
 }

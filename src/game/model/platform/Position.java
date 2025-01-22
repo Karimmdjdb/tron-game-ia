@@ -33,4 +33,9 @@ public class Position {
     public int hashCode() {
         return cord_x + cord_y;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%d , %d)", cord_x, cord_y);
+    }
 }

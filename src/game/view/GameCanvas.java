@@ -2,9 +2,13 @@ package game.view;
 
 import game.model.entities.Bike;
 import game.model.platform.Platform;
+import game.model.platform.Position;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
 import game.util.mvc.Observable;
 import game.util.mvc.Observer;
 
@@ -22,6 +26,7 @@ public class GameCanvas extends Canvas implements Observer {
      */
     public GameCanvas(double width, double height) {
         super(width, height);
+        Platform.getInstance().addObserver(this);
         gc = getGraphicsContext2D();
         draw();
     }
@@ -48,11 +53,12 @@ public class GameCanvas extends Canvas implements Observer {
         gc.fillRect(0, 0, getWidth(), getHeight());
 
         // dessin des joueurs
+        for(Bike bike : platform.getBikes()) drawStreak(bike);
         for(Bike bike : platform.getBikes()) drawBike(bike);
     }
 
     /**
-     * Déssine une moto (joueur) dans le canvas.
+     * Déssine le joueur dans le canvas.
      * @param bike l'instance de bike a désinner
      */
     private void drawBike(Bike bike) {
@@ -63,10 +69,42 @@ public class GameCanvas extends Canvas implements Observer {
         double sh = height / Platform.SIZE;
 
         // dessin
-        gc.setFill(Color.PINK);
         double cord_x = bike.getHeadPosition().getCordX();
         double cord_y = bike.getHeadPosition().getCordY();
+
+        // RadialGradient gradient = new RadialGradient(
+        //     -1,
+        //     0.5,
+        //     cord_x*sw+30/2,
+        //     cord_y*sh/2,
+        //     10*50,
+        //     false,
+        //     CycleMethod.NO_CYCLE,
+        //     new Stop(0.8, Color.WHITE.deriveColor(1, 1, 1, 0.5)),
+        //     new Stop(1, Color.TRANSPARENT)
+        // );
+
+        // gc.setFill(gradient);
+        // gc.fillOval(cord_x*sw-10/2, cord_y*sh-10/2, 10*2, 10*2);
+
+        gc.setFill(Color.PINK);
         gc.fillOval(cord_x*sw, cord_y*sh, 10, 10);
+    }
+
+    private void drawStreak(Bike bike) {
+        // calcul des proportions
+        double width = getWidth();
+        double height = getHeight();
+        double sw = width / Platform.SIZE;
+        double sh = height / Platform.SIZE;
+
+        // dessin
+        for(Position streak : bike.getStreakPositions()) {
+            gc.setFill(Color.BLUEVIOLET);
+            double cord_x = streak.getCordX();
+            double cord_y = streak.getCordY();
+            gc.fillRect(cord_x*sw, cord_y*sh, 10, 10);
+        }
     }
 
 

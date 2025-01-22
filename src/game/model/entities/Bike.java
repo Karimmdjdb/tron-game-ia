@@ -7,8 +7,9 @@ import game.model.platform.*;
 
 public class Bike extends game.util.mvc.AbstractObservable {
 
-    Position head;
-    List<Position> streak;
+    private Position head;
+    private List<Position> streak;
+    private boolean is_alive = true;
 
     public enum Direction {
         LEFT,
@@ -26,13 +27,19 @@ public class Bike extends game.util.mvc.AbstractObservable {
         return head;
     }
 
+    public List<Position> getStreakPositions() {
+        return streak;
+    }
+
     public void move(Direction dir) {
+
+        if(!is_alive) return;
 
         // calcul de la nouvelle position
         int new_cord_x = head.getCordX(), new_cord_y = head.getCordY();
         switch(dir) {
             case LEFT:
-                new_cord_x++;
+                new_cord_x--;
                 break;
             case UP:
                 new_cord_y--;
@@ -54,6 +61,14 @@ public class Bike extends game.util.mvc.AbstractObservable {
         if(platform.isPositionValid(new_position)) {
             streak.add(head);
             head = new_position;
+            platform.addVisitedPosition(new_position);
+            fireChangements();
+            return;
         }
+        is_alive = false;
+    }
+
+    public boolean isAlive() {
+        return is_alive;
     }
 }

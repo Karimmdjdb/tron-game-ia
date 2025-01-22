@@ -20,6 +20,13 @@ public class Position {
         return cord_y;
     }
 
+    public void setCordX(int cord_x) {
+        this.cord_x = cord_x;
+    }
+    public void setCordY(int cord_y) {
+        this.cord_y = cord_y;
+    }
+
     @Override
     public boolean equals(Object other) {
         if(other instanceof Position) {

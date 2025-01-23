@@ -60,12 +60,12 @@ public class Bike extends game.util.mvc.AbstractObservable {
         Position new_position = Position.from(new_cord_x, new_cord_y);
         if(platform.isPositionValid(new_position)) {
             streak.add(head);
+            platform.addVisitedPosition(head);
             head = new_position;
-            platform.addVisitedPosition(new_position);
             fireChangements();
             return;
         }
-        is_alive = false;
+        // is_alive = false;
     }
 
     public boolean isAlive() {

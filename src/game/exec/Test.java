@@ -17,8 +17,9 @@ public class Test {
         printPos(b1.getHeadPosition());
         printPos(b2.getHeadPosition());
 
-        MinMax alg = new MinMax(p);
-        System.out.println(alg.root.win);
+        // MinMax alg = new MinMax(p);
+        // System.out.println(alg.root.value);
+        System.out.println(Integer.MAX_VALUE);
         System.out.println("everything ok !");
     }
 

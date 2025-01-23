@@ -2,6 +2,7 @@ package game.controller;
 
 import java.util.Random;
 
+import game.algo.MinMax;
 import game.model.entities.Bike;
 import game.model.platform.Platform;
 
@@ -16,8 +17,12 @@ public class Controller {
     }
 
     public void update() {
-        for(Bike bike : model.getBikes()) {
-            bike.move(dirs[rand.nextInt(4)]);
-        }
+        // for(Bike bike : model.getBikes()) {
+            // bike.move(dirs[1]);
+        // }
+        Bike b1 = model.getBikes().get(0);
+        Bike b2 = model.getBikes().get(1);
+        b1.move(MinMax.minmax(model, 10, true));
+        b2.move(MinMax.minmax(model, 10, false));
     }
 }

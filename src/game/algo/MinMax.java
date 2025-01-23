@@ -2,16 +2,20 @@ package game.algo;
 import java.util.HashSet;
 import java.util.Set;
 
+import game.model.entities.Bike;
 import game.model.platform.Platform;
 import game.model.platform.Position;
 
 public class MinMax {
     public static class Node {
         public  Position p1,p2;
-        public  Set<Position> visited; 
-        public  Node n1,n2,n3,n4;
-        public int win = 0;
-        
+        public  Set<Position> visited;
+        // public  Node n1,n2,n3,n4;
+        // public int value = 0;
+
+        private Node() {
+        }
+
         private Node(Position p1,Position p2){
             this.p1 = p1;
             this.p2 = p2;
@@ -31,86 +35,105 @@ public class MinMax {
         public static Node copyNode(Node node) {
             return new Node(node);
         }
+
+        public static Node convertPlatformToNode(Platform platform) {
+            Node n = new Node();
+            n.visited = new HashSet<>(platform.getVisitedPositions());
+            n.p1 = platform.getBikes().get(0).getHeadPosition();
+            n.p2 = platform.getBikes().get(1).getHeadPosition();
+            return n;
+        }
+
+        public boolean isLeaf() {
+            if(visited.contains(p1) || visited.contains(p2)){
+                return true;
+            }
+            if(p1.getCordX() < 0 || p1.getCordY() < 0 || p1.getCordX() >= SIZE || p1.getCordY() >= SIZE) return true;
+            if(p2.getCordX() < 0 || p2.getCordY() < 0 || p2.getCordX() >= SIZE || p2.getCordY() >= SIZE) return true;
+            return false;
+        }
     }
 
-    public Node root;
-    public MinMax(Platform platfrom){
-        Position p1 = platfrom.getBikes().get(0).getHeadPosition();
-        Position p2 = platfrom.getBikes().get(1).getHeadPosition();
-        root = Node.createNode(p1, p2);
-        buildTree1(root);
+    private static final int SIZE = Platform.SIZE;
+
+    public static Bike.Direction minmax(Platform platform, int depth, boolean maximizing_player) {
+        int best = minmax(Node.convertPlatformToNode(platform), depth, maximizing_player, true);
+        Bike.Direction best_direction;
+        switch (best) {
+            case 0:
+                best_direction = Bike.Direction.LEFT;
+                break;
+            case 1:
+                best_direction = Bike.Direction.UP;
+                break;
+            case 2:
+                best_direction = Bike.Direction.RIGHT;
+                break;
+            case 4:
+                best_direction = Bike.Direction.DOWN;
+                break;
+            default:
+                best_direction = Bike.Direction.DOWN;
+                break;
+        }
+        return best_direction;
     }
+    private static int minmax(Node node, int depth, boolean maximizing_player, boolean first_call) {
 
-    public boolean isLeaf(Node node){
-        if(node.visited.contains(node.p2) || node.visited.contains(node.p2)){
-            return true;
-        }
-        if(node.p1.getCordX() < 0 || node.p1.getCordY() < 0 || node.p1.getCordX() >= 30 || node.p1.getCordY() >= 30) return true;
-        if(node.p2.getCordX() < 0 || node.p2.getCordY() < 0 || node.p2.getCordX() >= 30 || node.p2.getCordY() >= 30) return true;
-        return false;
-    }
-
-    public void buildTree1(Node root){
-        if(isLeaf(root)) {
-            root.win = 1;
-            return;
+        // cas de base
+        if(node.isLeaf() || depth == 0) {
+            return maximizing_player ? 1 : -1;
         }
 
-        Node n1 = Node.copyNode(root);
-        Node n2 = Node.copyNode(root);
-        Node n3 = Node.copyNode(root);
-        Node n4 = Node.copyNode(root);
-
-        Position p1 = root.p2;
-
-        n1.visited.add(p1);
-        n1.p2 = Position.from(p1.getCordX()-1, p1.getCordY());
-        buildTree2(n1);
-        
-        n2.visited.add(p1);
-        n2.p2 = Position.from(p1.getCordX(), p1.getCordY()-1);
-        buildTree2(n2);
-
-        n3.visited.add(p1);
-        n3.p2 = Position.from(p1.getCordX()+1, p1.getCordY());
-        buildTree2(n3);
-
-        n4.visited.add(p1);
-        n4.p2 = Position.from(p1.getCordX(), p1.getCordY()+1);
-        buildTree2(n4);
-
-        root.win = Math.max(n1.win, Math.max(n2.win, Math.max(n3.win, n4.win)));
+        /// création des noeuds qui corréspondent aux 4 états suivant du monde (un état pour chaque déplacement)
+        // duplication du noeud initial
+        Node n1 = Node.copyNode(node);
+        Node n2 = Node.copyNode(node);
+        Node n3 = Node.copyNode(node);
+        Node n4 = Node.copyNode(node);
+        // choix du joueur qui va se déplacer
+        Position p = maximizing_player ? node.p1 : node.p2;
+        // ajout de l'ancienne position du joueur qui s'est deplacé à la liste des positions visitées
+        n1.visited.add(p);
+        n2.visited.add(p);
+        n3.visited.add(p);
+        n4.visited.add(p);
+        // déplacement le joueur
+        if(maximizing_player) { // si c'est le joueur 1
+            n1.p1 = Position.from(p.getCordX()-1, p.getCordY());
+            n2.p1 = Position.from(p.getCordX(), p.getCordY()-1);
+            n3.p1 = Position.from(p.getCordX()+1, p.getCordY());
+            n4.p1 = Position.from(p.getCordX(), p.getCordY()+1);
+        } else { // si c'est le joueur 2
+            n1.p2 = Position.from(p.getCordX()-1, p.getCordY());
+            n2.p2 = Position.from(p.getCordX(), p.getCordY()-1);
+            n3.p2 = Position.from(p.getCordX()+1, p.getCordY());
+            n4.p2 = Position.from(p.getCordX(), p.getCordY()+1);
         }
 
-    public void buildTree2(Node root){
-        if(isLeaf(root)) {
-            root.win = -1;
-            return;
+        // appel récursif
+        int v1 = minmax(n1, depth-1, !maximizing_player, false);
+        int v2 = minmax(n2, depth-1, !maximizing_player, false);
+        int v3 = minmax(n3, depth-1, !maximizing_player, false);
+        int v4 = minmax(n4, depth-1, !maximizing_player, false);
+
+        // maximisation ou minimisation en fonction du joueur actuel
+        int best;
+        if(maximizing_player) { // si c'est le joueur 1
+            best = Math.max(v1, Math.max(v2, Math.max(v3, v4)));
+        } else { // si c'est le joueur 2
+            best = Math.min(v1, Math.min(v2, Math.min(v3, v4)));
         }
-        Node n1 = Node.copyNode(root);
-        Node n2 = Node.copyNode(root);
-        Node n3 = Node.copyNode(root);
-        Node n4 = Node.copyNode(root);
 
-        Position p2 = root.p2;
+        // si c'est l'appel initial alors le meilleur coup est retourné (sous forme d'entier)
+        if(first_call) {
+            if(best == v1) return 0;
+            else if(best == v2) return 1;
+            else if(best == v3) return 2;
+            else return 4;
+        }
 
-        n1.visited.add(p2);
-        n1.p2 = Position.from(p2.getCordX()-1, p2.getCordY());
-        buildTree1(n1);
-        
-        n2.visited.add(p2);
-        n2.p2 = Position.from(p2.getCordX(), p2.getCordY()-1);
-        buildTree1(n2);
-
-        n3.visited.add(p2);
-        n3.p2 = Position.from(p2.getCordX()+1, p2.getCordY());
-        buildTree1(n3);
-
-        n4.visited.add(p2);
-        n4.p2 = Position.from(p2.getCordX(), p2.getCordY()+1);
-        buildTree1(n4);
-
-        root.win = Math.min(n1.win, Math.min(n2.win, Math.min(n3.win, n4.win)));
-
+        // sinon on retourne la meilleure valeur des noeuds enfants
+        return best;
     }
 }

@@ -42,7 +42,10 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     public void addBike(Bike bike) {
         bikes.add(bike);
         bike.addObserver(this);
-        visited.add(bike.getHeadPosition());
+    }
+
+    public Set<Position> getVisitedPositions() {
+        return visited;
     }
 
     public boolean isPositionValid(Position position) {

@@ -31,6 +31,10 @@ public class Bike extends game.util.mvc.AbstractObservable {
         return streak;
     }
 
+    public void kill() {
+        is_alive = false;
+    }
+
     public void move(Direction dir) {
 
         if(!is_alive) return;
@@ -58,14 +62,10 @@ public class Bike extends game.util.mvc.AbstractObservable {
 
         // si la nouvelle position est valide alors on effectue le mouvement
         Position new_position = Position.from(new_cord_x, new_cord_y);
-        if(platform.isPositionValid(new_position)) {
-            streak.add(head);
-            platform.addVisitedPosition(head);
-            head = new_position;
-            fireChangements();
-            return;
-        }
-        // is_alive = false;
+        streak.add(head);
+        platform.addVisitedPosition(head);
+        head = new_position;
+        fireChangements();
     }
 
     public boolean isAlive() {

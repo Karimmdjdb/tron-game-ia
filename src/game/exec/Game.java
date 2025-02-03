@@ -3,6 +3,7 @@ package game.exec;
 import game.controller.Controller;
 import game.model.entities.Bike;
 import game.model.platform.Platform;
+import game.model.platform.Team;
 import game.view.GameScene;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -37,7 +38,6 @@ public class Game extends Application {
                 }
             }
         };
-
         timer.start();
 
         double width = 500;
@@ -53,13 +53,24 @@ public class Game extends Application {
      * @param args paramétres spécifiés au lancement du programme
      */
     public static void main(String[] args) {
+
+        // platforme de jeu
         Platform platform = Platform.getInstance();
+
+        // équipes
+        Team team_A = new Team();
+        Team team_B = new Team();
+
+        // joueurs
         Bike b1 = new Bike(platform.getRandomFreePosition());
-        platform.addBike(b1);
         Bike b2 = new Bike(platform.getRandomFreePosition());
-        platform.addBike(b2);
-        System.out.println("Bike 1 : x=" + b1.getHeadPosition().getCordX() + " y=" + b1.getHeadPosition().getCordY());
-        System.out.println("Bike 2 : x=" + b2.getHeadPosition().getCordX() + " y=" + b2.getHeadPosition().getCordY());
+
+        // formation des équipes
+        team_A.addMember(b1);
+        team_B.addMember(b2);
+        platform.setTeamA(team_A);
+        platform.setTeamB(team_B);
+
         System.out.println("Everything OK !");
 
         launch(args);

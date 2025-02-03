@@ -1,6 +1,7 @@
 package game.exec;
 
 import game.algo.MinMax;
+import game.controller.Controller;
 import game.model.entities.Bike;
 import game.model.platform.Platform;
 import game.model.platform.Position;
@@ -17,10 +18,17 @@ public class Test {
         printPos(b1.getHeadPosition());
         printPos(b2.getHeadPosition());
 
-        // MinMax alg = new MinMax(p);
-        // System.out.println(alg.root.value);
-        System.out.println(Integer.MAX_VALUE);
-        System.out.println("everything ok !");
+        Controller ctrl = new Controller(p);
+        while(true) {
+            try {
+                ctrl.update();
+                System.out.println("p1 : " + b1.getHeadPosition());
+                System.out.println("p2 : " + b2.getHeadPosition());
+                Thread.sleep(41);
+            } catch(Exception e) {
+
+            }
+        }
     }
 
     public static void printPos(Position p) {

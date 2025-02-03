@@ -11,16 +11,19 @@ import game.model.entities.Bike;
 public class Platform extends game.util.mvc.AbstractObservable implements game.util.mvc.Observer {
 
     public final static Random random = new Random();
-    public final static int SIZE = 100;
+    public final static int SIZE = 50;
 
     private static Platform singleton;
 
     private List<Bike> bikes;
     private Set<Position> visited;
+    private Team team_A, team_B;
+    private Set<Bike> alive_bikes;
 
     private Platform() {
         bikes = new ArrayList<>();
         visited = new HashSet<>();
+        alive_bikes = new HashSet<>();
     }
 
     public static Platform getInstance() {
@@ -41,6 +44,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
 
     public void addBike(Bike bike) {
         bikes.add(bike);
+        alive_bikes.add(bike);
         bike.addObserver(this);
     }
 
@@ -56,11 +60,63 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
         return true;
     }
 
+    public void checkCollisions() {
+        // si un joueur touche un mur
+        for(Bike b : bikes) {
+            if(!isPositionValid(b.getHeadPosition())){
+                b.kill();
+                alive_bikes.remove(b);
+            }
+        }
+
+        // si deux joueurs se rentrent dedans
+        for(Bike b1 : bikes)
+        for(Bike b2 : bikes) {
+            if(b1 == b2) continue;
+            if(b1.getHeadPosition().equals(b2.getHeadPosition())) {
+                b1.kill();
+                alive_bikes.remove(b1);
+                b2.kill();
+                alive_bikes.remove(b2);
+            }
+        }
+    }
+
     public void addVisitedPosition(Position position) {
         visited.add(position);
     }
 
     public Position getRandomFreePosition() {
         return Position.from(random.nextInt(SIZE), random.nextInt(SIZE));
+    }
+
+    public void setTeamA(Team team) {
+        bikes.addAll(team.getMembers());
+        alive_bikes.addAll(team.getMembers());
+        for(Bike b : team.getMembers()) {
+            b.addObserver(this);
+        }
+        team_A = team;
+    }
+
+    public void setTeamB(Team team) {
+        bikes.addAll(team.getMembers());
+        alive_bikes.addAll(team.getMembers());
+        for(Bike b : team.getMembers()) {
+            b.addObserver(this);
+        }
+        team_B = team;
+    }
+
+    public Team getTeamA() {
+        return team_A;
+    }
+
+    public Team getTeamB() {
+        return team_B;
+    }
+
+    public boolean isGameOver() {
+        return alive_bikes.isEmpty();
     }
 }

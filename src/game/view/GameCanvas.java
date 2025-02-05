@@ -6,9 +6,9 @@ import game.model.platform.Position;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.RadialGradient;
-import javafx.scene.paint.Stop;
+// import javafx.scene.paint.CycleMethod;
+// import javafx.scene.paint.RadialGradient;
+// import javafx.scene.paint.Stop;
 import game.util.mvc.Observable;
 import game.util.mvc.Observer;
 
@@ -49,7 +49,7 @@ public class GameCanvas extends Canvas implements Observer {
         gc.clearRect(0, 0, getWidth(), getHeight());
 
         // dessin de l'arriére plan
-        gc.setFill(Color.rgb(1, 23, 28));
+        gc.setFill(Color.rgb(1, 14, 17));
         gc.fillRect(0, 0, getWidth(), getHeight());
 
         // dessin des joueurs
@@ -87,8 +87,8 @@ public class GameCanvas extends Canvas implements Observer {
         // gc.setFill(gradient);
         // gc.fillOval(cord_x*sw-10/2, cord_y*sh-10/2, 10*2, 10*2);
 
-        gc.setFill(Color.PINK);
-        gc.fillOval(cord_x*sw, cord_y*sh, 10, 10);
+        gc.setFill(Color.WHITESMOKE);
+        gc.fillRect(cord_x*sw, cord_y*sh, 10, 10);
     }
 
     private void drawStreak(Bike bike) {
@@ -100,7 +100,8 @@ public class GameCanvas extends Canvas implements Observer {
 
         // dessin
         for(Position streak : bike.getStreakPositions()) {
-            gc.setFill(Color.BLUEVIOLET);
+            if(Platform.getInstance().getTeamA().getMembers().contains(bike)) gc.setFill(Color.LIGHTCORAL);
+            if(Platform.getInstance().getTeamB().getMembers().contains(bike)) gc.setFill(Color.LIGHTBLUE);
             double cord_x = streak.getCordX();
             double cord_y = streak.getCordY();
             gc.fillRect(cord_x*sw, cord_y*sh, 10, 10);

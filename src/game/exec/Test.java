@@ -1,6 +1,5 @@
 package game.exec;
 
-import game.algo.MinMax;
 import game.controller.Controller;
 import game.model.entities.Bike;
 import game.model.platform.Platform;

@@ -1,8 +1,10 @@
 package game.algo;
-import java.time.format.SignStyle;
+
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import game.model.entities.Bike;
@@ -12,13 +14,14 @@ import game.model.platform.Position;
 
 public class MinMax {
 
-    private static Set<Direction> possibles_moves;
+    private static List<Direction> possibles_moves;
     static {
-        possibles_moves = new HashSet<>();
-        possibles_moves.add(Direction.LEFT);
-        possibles_moves.add(Direction.UP);
-        possibles_moves.add(Direction.RIGHT);
-        possibles_moves.add(Direction.DOWN);
+        possibles_moves = List.of(
+            Direction.LEFT,
+            Direction.UP,
+            Direction.RIGHT,
+            Direction.DOWN
+        );
     }
 
     public static class GameState {
@@ -98,33 +101,85 @@ public class MinMax {
                 p2_head.getCordX() >= SIZE ||
                 p2_head.getCordY() < 0 ||
                 p2_head.getCordY() > SIZE) return true;
+            if(p1_head.getCordX() == p2_head.getCordX() && p1_head.getCordY() == p2_head.getCordY()) return true;
             return false;
         }
 
         public int evaluate() {
-            // Vérification des états terminaux
-    if (p1_streak.contains(p1_head) || p2_streak.contains(p1_head) ||
-    p1_head.getCordX() < 0 || p1_head.getCordX() >= SIZE ||
-    p1_head.getCordY() < 0 || p1_head.getCordY() >= SIZE) {
-    return Integer.MIN_VALUE; // Défaite du joueur maximisant
-}
-if (p1_streak.contains(p2_head) || p2_streak.contains(p2_head) ||
-    p2_head.getCordX() < 0 || p2_head.getCordX() >= SIZE ||
-    p2_head.getCordY() < 0 || p2_head.getCordY() >= SIZE) {
-    return Integer.MAX_VALUE; // Défaite du joueur minimisant (victoire de p1)
-}
-return 0;
-        }
-
-        public int evaluateLife() {
             int eval = 0;
-            if(!p1_streak.contains(p1_head) && !p2_streak.contains(p1_head)) eval += 10;
-            if(!p1_streak.contains(p2_head) && !p2_streak.contains(p2_head)) eval -= 10;
-            return eval;
+            if(p1_head.equals(p2_head)) eval = Integer.MIN_VALUE;
+            // Vérification des états terminaux
+            if (p1_streak.contains(p1_head) || p2_streak.contains(p1_head) ||
+            p1_head.getCordX() < 0 || p1_head.getCordX() >= SIZE ||
+            p1_head.getCordY() < 0 || p1_head.getCordY() >= SIZE) {
+                eval = (Integer.MIN_VALUE/2); // Défaite du joueur maximisant
+            }
+            if (p1_streak.contains(p2_head) || p2_streak.contains(p2_head) ||
+                p2_head.getCordX() < 0 || p2_head.getCordX() >= SIZE ||
+                p2_head.getCordY() < 0 || p2_head.getCordY() >= SIZE) {
+                eval =  (Integer.MAX_VALUE/2); // Défaite du joueur minimisant (victoire de p1)
+            }
+
+            if (!p1_streak.contains(p1_head) && !p2_streak.contains(p1_head) &&
+            p1_head.getCordX() >= 0 && p1_head.getCordX() < SIZE &&
+            p1_head.getCordY() >= 0 && p1_head.getCordY() < SIZE) {
+                eval += 1000; // Défaite du joueur maximisant
+            }
+
+            if (!p1_streak.contains(p2_head) && !p2_streak.contains(p2_head) &&
+            p2_head.getCordX() >= 0 && p2_head.getCordX() < SIZE &&
+            p2_head.getCordY() >= 0 && p2_head.getCordY() < SIZE) {
+                eval -= 1000; // Défaite du joueur maximisant
+            }
+
+            int p1_controlled_area = bfsControlledArea(p1_head, p1_streak, p2_streak);
+            int p2_controlled_area = bfsControlledArea(p2_head, p2_streak, p1_streak);
+
+            return eval + (p1_controlled_area - p2_controlled_area);
         }
 
-        public int evaluateDistanceToWall() {
-            return 1;
+        private int bfsControlledArea(Position start, List<Position> ownTrail, List<Position> opponentTrail) {
+            Set<Position> visited = new HashSet<>();
+            Queue<Position> queue = new LinkedList<>();
+            queue.add(start);
+            visited.add(start);
+
+            int depth = 3;
+            int area = 0;
+
+            while (!queue.isEmpty()) {
+                Position current = queue.poll();
+                area++;
+
+                for (Bike.Direction dir : Bike.Direction.values()) {
+                    Position neighbor = getNextPosition(current, dir);
+
+                    // Vérifier si la position est valide et non occupée
+                    if (isValidPosition(neighbor) && !visited.contains(neighbor)
+                        && !ownTrail.contains(neighbor) && !opponentTrail.contains(neighbor)) {
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+                depth--;
+                if(depth==0) break;
+            }
+            return area;
+        }
+
+        private Position getNextPosition(Position pos, Bike.Direction dir) {
+            switch (dir) {
+                case LEFT: return Position.from(pos.getCordX() - 1, pos.getCordY());
+                case UP: return Position.from(pos.getCordX(), pos.getCordY() - 1);
+                case RIGHT: return Position.from(pos.getCordX() + 1, pos.getCordY());
+                case DOWN: return Position.from(pos.getCordX(), pos.getCordY() + 1);
+                default: return pos;
+            }
+        }
+
+        private boolean isValidPosition(Position pos) {
+            return pos.getCordX() >= 0 && pos.getCordX() < SIZE &&
+                   pos.getCordY() >= 0 && pos.getCordY() < SIZE;
         }
     }
 
@@ -167,7 +222,6 @@ return 0;
     }
 
     private static int minmax(GameState state, int depth, boolean is_maximizing, boolean first_call, int alpha, int beta) {
-
         if(depth == 0 || state.isTerminal()) {
             return state.evaluate();
         }
@@ -192,7 +246,7 @@ return 0;
             }
             best_score = max_eval;
         } else { // si c'est le joueur min
-            int min_eval = Integer.MAX_VALUE;
+        int min_eval = Integer.MAX_VALUE;
             for(Direction dir : possibles_moves) {
                 state.simulateMove(dir, false);
                 int eval = minmax(state, depth-1, true, false, alpha, beta);
@@ -207,7 +261,6 @@ return 0;
             }
             best_score = min_eval;
         }
-
         return first_call ? best_move : best_score;
     }
 }

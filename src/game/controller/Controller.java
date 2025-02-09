@@ -3,6 +3,7 @@ package game.controller;
 
 import game.model.entities.Bike;
 import game.model.platform.Platform;
+import game.algo.MaxN;
 import game.algo.MinMax;
 
 public class Controller {
@@ -24,8 +25,9 @@ public class Controller {
             long debut = System.nanoTime();
 
             // minmax
-            if(b1.isAlive()) b1.move(MinMax.minmax(model, DEPTH, true));
-            if(b2.isAlive()) b2.move(MinMax.minmax(model, DEPTH, false));
+            if(b1.isAlive()) b1.move(MaxN.simulate(model, DEPTH, b1.getId()));
+            // System.out.println(b1.getHeadPosition());
+            if(b2.isAlive()) b2.move(MaxN.simulate(model, DEPTH, b2.getId()));
 
             long fin = System.nanoTime();
 

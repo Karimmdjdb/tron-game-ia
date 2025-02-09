@@ -6,10 +6,11 @@ import java.util.List;
 import game.model.platform.*;
 
 public class Bike extends game.util.mvc.AbstractObservable {
-
+    private static int total_bikes_number = 0;
     private Position head;
     private List<Position> streak;
     private boolean is_alive = true;
+    private final int id;
 
     public enum Direction {
         LEFT,
@@ -21,6 +22,7 @@ public class Bike extends game.util.mvc.AbstractObservable {
     public Bike(Position initial_position) {
         head = initial_position;
         streak = new ArrayList<>();
+        id = ++total_bikes_number;
     }
 
     public Position getHeadPosition() {
@@ -33,6 +35,10 @@ public class Bike extends game.util.mvc.AbstractObservable {
 
     public void kill() {
         is_alive = false;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public void move(Direction dir) {
@@ -70,5 +76,9 @@ public class Bike extends game.util.mvc.AbstractObservable {
 
     public boolean isAlive() {
         return is_alive;
+    }
+
+    public static int getPlayersNumber() {
+        return total_bikes_number;
     }
 }

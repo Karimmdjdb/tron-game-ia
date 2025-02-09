@@ -8,7 +8,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import game.model.entities.Bike;
-import game.model.entities.Bike.Direction;
+import game.model.platform.Direction;
 import game.model.platform.Platform;
 import game.model.platform.Position;
 
@@ -37,7 +37,7 @@ public class MinMax {
             this.p2_streak = new ArrayList<>(p2_streak);
         }
 
-        public void simulateMove(Bike.Direction dir, boolean maximizing_player) {
+        public void simulateMove(Direction dir, boolean maximizing_player) {
             if(maximizing_player) {
                 p1_streak.add(p1_head);
                 switch (dir) {
@@ -151,7 +151,7 @@ public class MinMax {
                 Position current = queue.poll();
                 area++;
 
-                for (Bike.Direction dir : Bike.Direction.values()) {
+                for (Direction dir : Direction.values()) {
                     Position neighbor = getNextPosition(current, dir);
 
                     // Vérifier si la position est valide et non occupée
@@ -167,7 +167,7 @@ public class MinMax {
             return area;
         }
 
-        private Position getNextPosition(Position pos, Bike.Direction dir) {
+        private Position getNextPosition(Position pos, Direction dir) {
             switch (dir) {
                 case LEFT: return Position.from(pos.getCordX() - 1, pos.getCordY());
                 case UP: return Position.from(pos.getCordX(), pos.getCordY() - 1);
@@ -185,7 +185,7 @@ public class MinMax {
 
     private static final int SIZE = Platform.SIZE;
 
-    public static Bike.Direction minmax(Platform platform, int depth, boolean is_maximising) {
+    public static Direction minmax(Platform platform, int depth, boolean is_maximising) {
         // on récupére les deux joueurs
         Bike p1 = platform.getTeamA().getMembers().get(0);
         Bike p2 = platform.getTeamB().getMembers().get(0);
@@ -200,22 +200,22 @@ public class MinMax {
 
         // appel initial
         int best = minmax(state, depth, is_maximising, true, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        Bike.Direction best_direction;
+        Direction best_direction;
         switch (best) {
             case 0:
-                best_direction = Bike.Direction.LEFT;
+                best_direction = Direction.LEFT;
                 break;
             case 1:
-                best_direction = Bike.Direction.UP;
+                best_direction = Direction.UP;
                 break;
             case 2:
-                best_direction = Bike.Direction.RIGHT;
+                best_direction = Direction.RIGHT;
                 break;
             case 3:
-                best_direction = Bike.Direction.DOWN;
+                best_direction = Direction.DOWN;
                 break;
             default:
-                best_direction = Bike.Direction.DOWN;
+                best_direction = Direction.DOWN;
                 break;
         }
         return best_direction;

@@ -2,8 +2,10 @@ package game.exec;
 
 import game.controller.Controller;
 import game.model.entities.Bike;
+import game.model.entities.Bot;
 import game.model.platform.Platform;
 import game.model.platform.Team;
+import game.util.strategies.MaxNStrategy;
 import game.view.GameScene;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -62,12 +64,16 @@ public class Game extends Application {
         Team team_B = new Team();
 
         // joueurs
-        Bike b1 = new Bike(platform.getRandomFreePosition());
-        Bike b2 = new Bike(platform.getRandomFreePosition());
+        Bike b1 = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
+        Bike b2 = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
+        Bike b3 = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
+        Bike b4 = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
 
         // formation des équipes
         team_A.addMember(b1);
+        team_A.addMember(b3);
         team_B.addMember(b2);
+        team_B.addMember(b4);
         platform.setTeamA(team_A);
         platform.setTeamB(team_B);
 

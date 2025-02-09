@@ -12,13 +12,6 @@ public class Bike extends game.util.mvc.AbstractObservable {
     private boolean is_alive = true;
     private final int id;
 
-    public enum Direction {
-        LEFT,
-        UP,
-        RIGHT,
-        DOWN
-    }
-
     public Bike(Position initial_position) {
         head = initial_position;
         streak = new ArrayList<>();

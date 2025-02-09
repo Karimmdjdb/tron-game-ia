@@ -1,14 +1,10 @@
 package game.controller;
 
-
 import game.model.entities.Bike;
+import game.model.entities.Bot;
 import game.model.platform.Platform;
-import game.algo.MaxN;
-import game.algo.MinMax;
 
 public class Controller {
-
-    private static final int DEPTH = 10;
 
     private Platform model;
 
@@ -19,20 +15,21 @@ public class Controller {
     public void update() {
         if(!model.isGameOver()) {
 
-            Bike b1 = model.getTeamA().getMembers().get(0);
-            Bike b2 = model.getTeamB().getMembers().get(0);
-
+            // début du timer
             long debut = System.nanoTime();
 
-            // minmax
-            if(b1.isAlive()) b1.move(MaxN.simulate(model, DEPTH, b1.getId()));
-            // System.out.println(b1.getHeadPosition());
-            if(b2.isAlive()) b2.move(MaxN.simulate(model, DEPTH, b2.getId()));
+            // on fait jouer les bots
+            for(Bike bike : model.getBikes()) {
+                Bot bot = (Bot)bike;
+                if(!bot.isAlive()) continue;
+                bot.play();
+            }
 
+            // fin du timer
             long fin = System.nanoTime();
+            System.out.println("Temps de calcul du tour : " + (fin - debut) / 1_000_000 + " ms");
 
-            System.out.println("Temps de calcul MinMax : " + (fin - debut) / 1_000_000 + " ms");
-
+            // vérification des collisions des joueurs
             model.checkCollisions();
 
             if(model.isGameOver()) {

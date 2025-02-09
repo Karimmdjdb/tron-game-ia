@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import game.model.entities.Bike;
-import game.model.entities.Bike.Direction;
+import game.model.platform.Direction;
 import game.model.platform.Platform;
 
 public class MaxN {
@@ -15,6 +15,7 @@ public class MaxN {
         return (Direction)maxn(new GameState(platform), depth, player_id, true);
     }
 
+    @SuppressWarnings("unchecked")
     private static Object maxn(GameState game_state, int depth, int player_id, boolean is_first_call) {
 
         // si c'est un noeud on retourne l'évaluation de l'état de jeu

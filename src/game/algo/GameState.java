@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import game.model.entities.Bike;
-import game.model.entities.Bike.Direction;
+import game.model.platform.Direction;
 import game.model.platform.Platform;
 import game.model.platform.Position;
 

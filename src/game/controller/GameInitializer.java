@@ -5,6 +5,7 @@ import game.model.platform.Platform;
 import game.model.platform.Team;
 import game.util.config.ConfigReader;
 import game.util.strategies.MaxNStrategy;
+import game.util.strategies.ParanoidStrategy;
 
 public class GameInitializer {
 
@@ -28,11 +29,11 @@ public class GameInitializer {
 
         // création des joueurs (bots)
         for(int i=0; i<NB_PLAYERS_TEAM1; i++) {
-            Bot bot = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
+            Bot bot = new Bot(platform.getRandomFreePosition(), new ParanoidStrategy());
             team_A.addMember(bot);
         }
         for(int i=0; i<NB_PLAYERS_TEAM2; i++) {
-            Bot bot = new Bot(platform.getRandomFreePosition(), new MaxNStrategy());
+            Bot bot = new Bot(platform.getRandomFreePosition(), new ParanoidStrategy());
             team_B.addMember(bot);
         }
 

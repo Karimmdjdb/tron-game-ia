@@ -34,7 +34,7 @@ public class Paranoid {
             int worst_case_score = Integer.MAX_VALUE;
             for(int opponent_id = 1; opponent_id <= Bike.getPlayersNumber(); opponent_id++) {
                 if(player_id == opponent_id) continue;
-                int oppenent_best_score = 0;
+                int oppenent_best_score = opponentParanoid(game_state, opponent_id);
                 worst_case_score = Math.min(worst_case_score, oppenent_best_score);
             }
 
@@ -48,7 +48,7 @@ public class Paranoid {
         }
 
         if(is_first_call) return best_move;
-        
+
         return best_score;
     }
 

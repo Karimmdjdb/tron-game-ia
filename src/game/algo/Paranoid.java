@@ -11,11 +11,11 @@ public class Paranoid {
     public static Direction simulate(Platform platform, int depth, int player_id) {
         return (Direction)paranoid(new GameState(platform), depth, player_id, true);
     }
-    @SuppressWarnings("unchecked")
+
     public static Object paranoid(GameState game_state, int depth, int player_id, boolean is_first_call) {
          // si c'est un noeud on retourne l'évaluation de l'état de jeu
         if(depth == 0 || game_state.isTerminal()) {
-            return game_state.evaluate();
+            return game_state.evaluate().get(player_id);
         }
 
         // on calcule l'id du prochain joueur
@@ -23,7 +23,7 @@ public class Paranoid {
 
         // si le joueur est éliminé il n'influence pas la suite du calcul
         if(!game_state.canPlayerMove(player_id)) {
-            return (Map<Integer, Integer>)paranoid(game_state, depth - 1, next_player_id, false);
+            return (int)paranoid(game_state, depth - 1, next_player_id, false);
         }
 
         int best_score = Integer.MIN_VALUE;
@@ -34,7 +34,7 @@ public class Paranoid {
             int worst_case_score = Integer.MAX_VALUE;
             for(int opponent_id = 1; opponent_id <= Bike.getPlayersNumber(); opponent_id++) {
                 if(player_id == opponent_id) continue;
-                int oppenent_best_score = 0;
+                int oppenent_best_score = (int)paranoid(game_state, depth-1, opponent_id, false);
                 worst_case_score = Math.min(worst_case_score, oppenent_best_score);
             }
 
@@ -48,7 +48,7 @@ public class Paranoid {
         }
 
         if(is_first_call) return best_move;
-        
+
         return best_score;
     }
 

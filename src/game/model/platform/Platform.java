@@ -7,11 +7,17 @@ import java.util.Random;
 import java.util.Set;
 
 import game.model.entities.Bike;
+import game.util.config.ConfigReader;
 
 public class Platform extends game.util.mvc.AbstractObservable implements game.util.mvc.Observer {
 
-    public final static Random random = new Random();
-    public final static int SIZE = 50;
+    public final static Random random;
+    public final static int SIZE;
+
+    static {
+        random = new Random();
+        SIZE = Integer.parseInt(ConfigReader.get("platform_size"));
+    }
 
     private static Platform singleton;
 
@@ -35,7 +41,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
 
     @Override
     public void update(game.util.mvc.Observable source) {
-        fireChangements();
+        // fireChangements();
     }
 
     public List<Bike> getBikes() {
@@ -80,6 +86,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
                 alive_bikes.remove(b2);
             }
         }
+        fireChangements();
     }
 
     public void addVisitedPosition(Position position) {

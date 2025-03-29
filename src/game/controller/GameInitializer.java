@@ -6,6 +6,8 @@ import game.model.platform.Team;
 import game.util.config.ConfigReader;
 import game.util.strategies.MaxNStrategy;
 import game.util.strategies.ParanoidStrategy;
+import game.util.strategies.BotStrategy;
+import game.view.*;
 
 public class GameInitializer {
 
@@ -18,27 +20,32 @@ public class GameInitializer {
         NB_PLAYERS_TEAM2 = Integer.parseInt(ConfigReader.get("team_2_nb_players"));
     }
 
-    public static void init() {
+   public static void init(String teamAStrategy, String teamBStrategy) {
+    Platform platform = Platform.getInstance();
 
-        // platforme de jeu
-        Platform platform = Platform.getInstance();
+    Team teamA = new Team();
+    Team teamB = new Team();
 
-        // création des équipes
-        Team team_A = new Team();
-        Team team_B = new Team();
-
-        // création des joueurs (bots)
-        for(int i=0; i<NB_PLAYERS_TEAM1; i++) {
-            Bot bot = new Bot(platform.getRandomFreePosition(), new ParanoidStrategy());
-            team_A.addMember(bot);
-        }
-        for(int i=0; i<NB_PLAYERS_TEAM2; i++) {
-            Bot bot = new Bot(platform.getRandomFreePosition(), new ParanoidStrategy());
-            team_B.addMember(bot);
-        }
-
-        platform.setTeamA(team_A);
-        platform.setTeamB(team_B);
-
+    for (int i = 0; i < NB_PLAYERS_TEAM1; i++) {
+        Bot bot = new Bot(platform.getRandomFreePosition(), createStrategy(teamAStrategy));
+        teamA.addMember(bot);
     }
+
+    for (int i = 0; i < NB_PLAYERS_TEAM2; i++) {
+        Bot bot = new Bot(platform.getRandomFreePosition(), createStrategy(teamBStrategy));
+        teamB.addMember(bot);
+    }
+
+    platform.setTeamA(teamA);
+    platform.setTeamB(teamB);
+}
+
+private static BotStrategy createStrategy(String strategyName) {
+    switch (strategyName) {
+        case "MaxNStrategy": return new MaxNStrategy();
+        case "ParanoidStrategy": return new ParanoidStrategy();
+        case "RandomStrategy": return new MaxNStrategy();
+        default: throw new IllegalArgumentException("Stratégie inconnue : " + strategyName);
+    }
+}
 }

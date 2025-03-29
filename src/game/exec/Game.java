@@ -3,37 +3,47 @@ package game.exec;
 import game.controller.Controller;
 import game.controller.GameInitializer;
 import game.model.platform.Platform;
-import game.view.GameScene;
+import game.view.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-
-/**
- * Classe éxécutable qui lance l'application.
- */
 public class Game extends Application {
 
     private long last_update = 0;
     private final static long TICK = 41_000_000;
+    private String teamAStrategy;
+    private String teamBStrategy;
 
-    /**
-     * {@inheritdoc}
-     */
     @Override
     public void start(Stage stage) throws Exception {
+        // Lancer la fenêtre de sélection des algorithmes
+        AlgorithmSelectWindow algoWindow = new AlgorithmSelectWindow();
+
+        // Attendre que l'utilisateur sélectionne les algorithmes
+        algoWindow.setOnStrategySelected((selectedTeamAStrategy, selectedTeamBStrategy) -> {
+            teamAStrategy = selectedTeamAStrategy;
+            teamBStrategy = selectedTeamBStrategy;
+            startGame(stage);
+        });
+
+        algoWindow.start(new Stage());
+    }
+
+    private void startGame(Stage stage) {
+        Platform platform = Platform.getInstance();
+        Controller control = new Controller(platform);
+        
+        // Initialiser le jeu avec les stratégies sélectionnées
+        GameInitializer.init(teamAStrategy, teamBStrategy);
 
         Group root = new Group();
-        Controller control = new Controller(Platform.getInstance());
 
         AnimationTimer timer = new AnimationTimer() {
-            /**
-             * Cette méthode sera executée à chaque actualisation de l'affichage avec un certain frame rate
-             */
             public void handle(long now) {
-                if(now - last_update >= TICK) { // condition pour mettre à jour le modéle à une certaine fréquence (tick)
+                if (now - last_update >= TICK) {
                     control.update();
                     last_update = now;
                 }
@@ -50,16 +60,7 @@ public class Game extends Application {
         timer.start();
     }
 
-    /**
-     * méthode d'entrée du programme.
-     * @param args paramétres spécifiés au lancement du programme
-     */
     public static void main(String[] args) {
-
-        GameInitializer.init();
-
-        System.out.println("Everything OK !");
-
         launch(args);
     }
 }

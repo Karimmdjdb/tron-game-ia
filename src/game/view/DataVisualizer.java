@@ -1,153 +1,133 @@
 package game.view;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 import game.data.DataCollector;
 
 public class DataVisualizer extends Application {
 
-    // Structure pour le graphe basé sur nbJoueursParTeam :
-    // profondeur -> nbJoueursParTeam -> (nom de l'algo -> parties gagnées)
-    private Map<Integer, Map<Integer, Map<String, Integer>>> dataPlayers = DataCollector.getDeltaTeamResults();
-    // Structure pour le graphe basé sur taille de la grille :
-    // profondeur -> taille de la grille -> (nom de l'algo -> parties gagnées)
+    // Données pour "taille de grille" : profondeur -> taille de grille -> (algorithme -> parties gagnées)
     private Map<Integer, Map<Integer, Map<String, Integer>>> dataGridSize = DataCollector.getDeltaSizeResults();
+    // Données pour "taille d'équipes" : profondeur -> taille d'équipe -> (algorithme -> parties gagnées)
+    private Map<Integer, Map<Integer, Map<String, Integer>>> dataTeamSize = DataCollector.getDeltaTeamResults();
+
+    public DataVisualizer() {
+    }
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Graphiques des parties gagnées");
+        primaryStage.setTitle("Bar Charts des parties gagnées");
 
-        // Création du premier graphique : l'axe X représente le nombre de joueurs par équipe
-        // et chaque série (couleur) représente un algorithme.
-        BarChart<String, Number> barChartPlayers = createBarChartByAlgorithm(
-            "Performance (Joueurs par équipe)",
-            dataPlayers,
-            "Nombre de joueurs par équipe",
-            "Parties gagnées"
-        );
+        // Créer une section pour la catégorie "taille de grille"
+        VBox boxGrid = new VBox(10);
+        boxGrid.setPadding(new Insets(10));
+        Label labelGrid = new Label("Catégorie : Variation de profondeur de recherche et de taille de grille");
+        HBox chartsGrid = new HBox(20);
+        chartsGrid.setAlignment(Pos.CENTER);
+        // Pour chaque algorithme présent dans dataGridSize, créer un bar chart
+        Set<String> algosGrid = getAlgorithms(dataGridSize);
+        for (String algo : algosGrid) {
+            BarChart<String, Number> chart = createBarChartForAlgorithm(dataGridSize, algo, "Taille de grille");
+            chartsGrid.getChildren().add(chart);
+        }
+        boxGrid.getChildren().addAll(labelGrid, chartsGrid);
 
-        // Création du deuxième graphique : l'axe X représente la taille de la grille
-        // et chaque série (couleur) représente un algorithme.
-        BarChart<String, Number> barChartGrid = createBarChartByAlgorithm(
-            "Performance (Taille de la grille)",
-            dataGridSize,
-            "Taille de la grille",
-            "Parties gagnées"
-        );
+        // Créer une section pour la catégorie "taille d'équipe"
+        VBox boxTeam = new VBox(10);
+        boxTeam.setPadding(new Insets(10));
+        Label labelTeam = new Label("Catégorie : Variation de profondeur de recherche et d'effectif des équipes'");
+        HBox chartsTeam = new HBox(20);
+        chartsTeam.setAlignment(Pos.CENTER);
+        // Pour chaque algorithme présent dans dataTeamSize, créer un bar chart
+        Set<String> algosTeam = getAlgorithms(dataTeamSize);
+        for (String algo : algosTeam) {
+            BarChart<String, Number> chart = createBarChartForAlgorithm(dataTeamSize, algo, "Taille d'équipe");
+            chartsTeam.getChildren().add(chart);
+        }
+        boxTeam.getChildren().addAll(labelTeam, chartsTeam);
 
-        VBox root = new VBox(20);
-        root.getChildren().addAll(barChartPlayers, barChartGrid);
+        // Disposer les deux sections verticalement
+        VBox mainBox = new VBox(30);
+        mainBox.setAlignment(Pos.CENTER);
+        mainBox.getChildren().addAll(boxGrid, boxTeam);
 
-        Scene scene = new Scene(root, 800, 800);
+        BorderPane root = new BorderPane();
+        Label mainLabel = new Label("Influence de la profondeur de recherche sur le jeu : impact de la taille des équipes et de la grille");
+        mainLabel.setPadding(new Insets(10));
+        root.setTop(mainLabel);
+        BorderPane.setAlignment(mainLabel, Pos.CENTER);
+        root.setCenter(mainBox);
+
+        Scene scene = new Scene(root, 1200, 800);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     /**
-     * Crée un BarChart en agrégant les données par algorithme.
-     * L'axe X représente la donnée (nombre de joueurs ou taille de la grille)
-     * et chaque série (couleur) correspond à un algorithme.
-     * Les valeurs sont agrégées sur toutes les profondeurs.
-     *
-     * @param title      Titre du graphique.
-     * @param data       Structure de données : profondeur -> (donnée -> (algorithme -> parties gagnées))
-     * @param xAxisLabel Label de l'axe X.
-     * @param yAxisLabel Label de l'axe Y.
-     * @return BarChart affichant les données agrégées.
+     * Crée un BarChart pour un algorithme donné à partir des données.
+     * L'axe X représente la profondeur de recherche et l'axe Y le nombre de parties gagnées.
+     * Chaque série correspond à une valeur (taille de grille ou taille d'équipe).
      */
-    private BarChart<String, Number> createBarChartByAlgorithm(String title,
-                                                                Map<Integer, Map<Integer, Map<String, Integer>>> data,
-                                                                String xAxisLabel,
-                                                                String yAxisLabel) {
+    private BarChart<String, Number> createBarChartForAlgorithm(Map<Integer, Map<Integer, Map<String, Integer>>> data,
+                                                                  String algorithm,
+                                                                  String sizeLabel) {
+        // Axe des catégories pour la profondeur
         CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel(xAxisLabel);
-
+        xAxis.setLabel("Profondeur");
         NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel(yAxisLabel);
+        yAxis.setLabel("Parties gagnées");
 
         BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
-        barChart.setTitle(title);
+        barChart.setBarGap(0);       // Pas d'espacement entre les barres d'une même catégorie
+        barChart.setCategoryGap(10); // Vous pouvez ajuster cette valeur selon vos préférences
 
-        // Agrégation : pour chaque algorithme, pour chaque catégorie (nombre de joueurs ou taille),
-        // on somme les parties gagnées sur toutes les profondeurs.
-        Map<String, Map<Integer, Integer>> aggregatedData = new HashMap<>();
+        barChart.setTitle("Algorithme : " + algorithm + " (" + sizeLabel + ")");
+        barChart.setLegendVisible(true);
 
-        for (Map<Integer, Map<String, Integer>> innerMap : data.values()) {
-            for (Map.Entry<Integer, Map<String, Integer>> entry : innerMap.entrySet()) {
-                Integer categoryKey = entry.getKey(); // nombre de joueurs ou taille de grille
-                Map<String, Integer> algoMap = entry.getValue();
-                for (Map.Entry<String, Integer> algoEntry : algoMap.entrySet()) {
-                    String algoName = algoEntry.getKey();
-                    Integer wins = algoEntry.getValue();
-                    aggregatedData.putIfAbsent(algoName, new HashMap<>());
-                    Map<Integer, Integer> catMap = aggregatedData.get(algoName);
-                    catMap.put(categoryKey, catMap.getOrDefault(categoryKey, 0) + wins);
-                }
-            }
+        // Récupérer l'ensemble des profondeurs (clé extérieure)
+        Set<Integer> depthSet = new TreeSet<>(data.keySet());
+        // Récupérer l'ensemble des tailles (clé interne)
+        Set<Integer> sizeSet = new TreeSet<>();
+        for (Map<Integer, Map<String, Integer>> inner : data.values()) {
+            sizeSet.addAll(inner.keySet());
         }
-
-        // Déterminer toutes les catégories (pour l'axe X) de manière triée
-        TreeSet<Integer> categories = new TreeSet<>();
-        for (Map<Integer, Integer> catMap : aggregatedData.values()) {
-            categories.addAll(catMap.keySet());
-        }
-
-        // Créer une série pour chaque algorithme
-        for (Map.Entry<String, Map<Integer, Integer>> entry : aggregatedData.entrySet()) {
-            String algoName = entry.getKey();
+        // Pour chaque taille, créer une série
+        for (Integer size : sizeSet) {
             XYChart.Series<String, Number> series = new XYChart.Series<>();
-            series.setName(algoName);
-
-            // Pour chaque catégorie, ajouter le point correspondant (afficher 0 si aucune donnée)
-            for (Integer cat : categories) {
-                Integer wins = entry.getValue().getOrDefault(cat, 0);
-                series.getData().add(new XYChart.Data<>(cat.toString(), wins));
+            series.setName("Taille " + size);
+            // Pour chaque profondeur, récupérer le nombre de parties gagnées pour l'algorithme et la taille donnée
+            for (Integer depth : depthSet) {
+                int wins = 0;
+                if (data.containsKey(depth) && data.get(depth).containsKey(size)) {
+                    wins = data.get(depth).get(size).getOrDefault(algorithm, 0);
+                }
+                series.getData().add(new XYChart.Data<>(depth.toString(), wins));
             }
             barChart.getData().add(series);
         }
         return barChart;
     }
 
-    /**
-     * Exemple de données fictives pour le graphe basé sur nbJoueursParTeam.
-     */
-    private Map<Integer, Map<Integer, Map<String, Integer>>> createSampleDataPlayers() {
-        Map<Integer, Map<Integer, Map<String, Integer>>> sampleData = new HashMap<>();
-
-        // Profondeur 1, nbJoueursParTeam = 3
-        Map<Integer, Map<String, Integer>> teamMap1 = new HashMap<>();
-        Map<String, Integer> algoMap1 = new HashMap<>();
-        algoMap1.put("AlgoA", 10);
-        algoMap1.put("AlgoB", 15);
-        teamMap1.put(3, algoMap1);
-        sampleData.put(1, teamMap1);
-
-        // Profondeur 2, nbJoueursParTeam = 4
-        Map<Integer, Map<String, Integer>> teamMap2 = new HashMap<>();
-        Map<String, Integer> algoMap2 = new HashMap<>();
-        algoMap2.put("AlgoA", 20);
-        algoMap2.put("AlgoB", 25);
-        teamMap2.put(4, algoMap2);
-        sampleData.put(2, teamMap2);
-
-        // Autre donnée pour montrer l'agrégation :
-        // Profondeur 1, nbJoueursParTeam = 4
-        Map<Integer, Map<String, Integer>> teamMap3 = sampleData.getOrDefault(1, new HashMap<>());
-        Map<String, Integer> algoMap3 = new HashMap<>();
-        algoMap3.put("AlgoA", 5);
-        algoMap3.put("AlgoB", 7);
-        teamMap3.put(4, algoMap3);
-        sampleData.put(1, teamMap3);
-
-        return sampleData;
+    // Méthode utilitaire pour extraire l'ensemble des algorithmes d'un jeu de données.
+    private Set<String> getAlgorithms(Map<Integer, Map<Integer, Map<String, Integer>>> data) {
+        Set<String> algos = new TreeSet<>();
+        for (Map<Integer, Map<String, Integer>> innerMap : data.values()) {
+            for (Map<String, Integer> map : innerMap.values()) {
+                algos.addAll(map.keySet());
+            }
+        }
+        return algos;
     }
 
     public static void main(String[] args) {

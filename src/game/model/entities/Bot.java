@@ -15,8 +15,8 @@ public class Bot extends Bike {
         super(initial_position, platform);
         this.strategy = strategy;
         if(strategy instanceof MaxNStrategy) strategy_name = "MaxN";
-        if(strategy instanceof ParanoidStrategy) strategy_name = "Paranoiïd";
-        if(strategy instanceof SosStrategy) strategy_name = "SOS";
+        if(strategy instanceof ParanoidStrategy) strategy_name = "Paranoïd";
+        if(strategy instanceof SosStrategy) strategy_name = "Sos";
     }
 
     public void play() {

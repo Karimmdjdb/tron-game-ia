@@ -19,13 +19,13 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     private Team team_A, team_B;
     private Set<Bike> alive_bikes;
     private List<Integer> playerOrder;
-    private int SIZE;
+    private int size;
 
     public Platform() {
         bikes = new ArrayList<>();
         visited = new HashSet<>();
         alive_bikes = new HashSet<>();
-        SIZE = Shared.SIZE;
+        size = Shared.SIZE;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
 
     public boolean isPositionValid(Position position) {
         // si le joueur sort de la plateforme
-        if(position.getCordX() < 0 || position.getCordY() < 0 || position.getCordX() >= SIZE || position.getCordY() >= SIZE) return false;
+        if(position.getCordX() < 0 || position.getCordY() < 0 || position.getCordX() >= size || position.getCordY() >= size) return false;
         // si le joueur passe par une case déja visitée
         if(visited.contains(position)) return false;
         return true;
@@ -83,7 +83,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     }
 
     public Position getRandomFreePosition() {
-        return Position.from(random.nextInt(SIZE), random.nextInt(SIZE));
+        return Position.from(random.nextInt(size), random.nextInt(size));
     }
 
     public void setTeamA(Team team) {
@@ -148,6 +148,6 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     }
 
     public int getSize() {
-        return SIZE;
+        return size;
     }
 }

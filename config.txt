@@ -5,7 +5,7 @@ platform_size = 50
 nb_players_per_team = 4
 
 # algorithm of the players of both teams : maxn / paranoid / sos
-team_1_strat = paranoid
+team_1_strat = maxn
 team_2_strat= sos
 
 # search depth of the algorithms

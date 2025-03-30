@@ -1,164 +1,206 @@
 package game.algo;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.Stack;
-
-import game.model.entities.Bike;
+import java.util.*;
 import game.model.platform.Direction;
-import game.model.platform.Platform;
 import game.model.platform.Position;
+import game.model.entities.Bike;
+import game.model.platform.Platform;
 
 public class GameState {
-
     private static final int SIZE = Platform.SIZE;
-
+    
+    // Position actuelle de chaque joueur (player_id -> Position)
     private Map<Integer, Position> players;
-    private Stack<Position> visited;
+    // Ensemble des positions visitées (global)
+    private Set<Position> visited;
+    // Historique par joueur pour le backtracking
+    private Map<Integer, Stack<Position>> history;
 
     public GameState(Platform platform) {
         players = new HashMap<>();
-        visited = new Stack<>();
-
-        for(Bike bike : platform.getBikes()) {
+        visited = new HashSet<>();
+        history = new HashMap<>();
+        // Pour chaque Bike, on enregistre sa position actuelle et ses cases déjà visitées
+        for (Bike bike : platform.getBikes()) {
             players.put(bike.getId(), bike.getHeadPosition());
             visited.addAll(bike.getStreakPositions());
+            history.put(bike.getId(), new Stack<>());
         }
     }
-
-    public void simulateMove(int player_id, Direction direction) {
-        Position old_position = players.get(player_id);
-        int x_offset = 0, y_offset = 0;
-        switch(direction) {
-            case LEFT:
-                x_offset = -1; y_offset = 0;
-                break;
-            case UP:
-                x_offset = 0; y_offset = -1;
-                break;
-            case RIGHT:
-                x_offset = 1; y_offset = 0;
-                break;
-            case DOWN:
-                x_offset = 0; y_offset = 1;
-                break;
-            default:
-                break;
+    
+    /**
+     * Retourne la liste des directions légales pour le joueur d'identifiant player_id,
+     * en fonction de sa position actuelle et des cases déjà visitées.
+     */
+    public List<Direction> legalMoves(int player_id) {
+        List<Direction> moves = new ArrayList<>();
+        Position current = players.get(player_id);
+        for (Direction d : Direction.values()) {
+            Position newPos = getNextPosition(current, d);
+            if (isValidPosition(newPos)) {
+                moves.add(d);
+            }
         }
-        Position new_position = Position.from(old_position.getCordX() + x_offset, old_position.getCordY() + y_offset);
-        visited.push(old_position);
-        players.put(player_id, new_position);
+        return moves;
     }
-
+    
+    /**
+     * Simule le mouvement du joueur player_id dans la direction d.
+     * La position courante est sauvegardée dans l'historique et marquée comme visitée.
+     */
+    public void simulateMove(int player_id, Direction d) {
+        Position current = players.get(player_id);
+        // Sauvegarde la position courante
+        history.get(player_id).push(current);
+        // Marque la position comme visitée (on suppose que, dans une simulation, on peut "libérer" cette case lors du backtracking)
+        visited.add(current);
+        // Met à jour la position
+        Position newPos = getNextPosition(current, d);
+        players.put(player_id, newPos);
+    }
+    
+    /**
+     * Annule le dernier mouvement du joueur player_id.
+     * La position précédente est retirée de l'historique et la case visitée est "défaite".
+     */
     public void goBack(int player_id) {
-        players.put(player_id, visited.pop());
+        Stack<Position> hist = history.get(player_id);
+        if (!hist.isEmpty()) {
+            Position prev = hist.pop();
+            // On retire la position précédemment ajoutée à visited
+            visited.remove(prev);
+            players.put(player_id, prev);
+        }
     }
-
+    
+    /**
+     * Retourne true si aucun joueur ne peut effectuer de mouvement légal.
+     * On considère ici l'état terminal lorsque tous les joueurs n'ont plus de coup.
+     */
     public boolean isTerminal() {
-        for(Position player_position : players.values()) {
-            if(!visited.contains(player_position)) return false;
+        for (Integer playerId : players.keySet()) {
+            if (canPlayerMove(playerId)) {
+                return false;
+            }
         }
         return true;
     }
-
+    
+    /**
+     * Un joueur peut bouger si sa position est valide.
+     */
     public boolean canPlayerMove(int player_id) {
-        return !(visited.contains(players.get(player_id)) || isPlayerOut(player_id));
+        return isValidPosition(players.get(player_id));
     }
-
+    
+    /**
+     * Retourne true si le joueur player_id est hors du plateau.
+     */
     public boolean isPlayerOut(int player_id) {
-        Position position = players.get(player_id);
-        return position.getCordX() < 0 || position.getCordY() < 0 || position.getCordX() >= SIZE || position.getCordY() >= SIZE;
+        Position pos = players.get(player_id);
+        return pos.getCordX() < 0 || pos.getCordY() < 0 || pos.getCordX() >= SIZE || pos.getCordY() >= SIZE;
     }
-
+    
+    /**
+     * Évalue l'état courant en renvoyant une Map associant à chaque player_id un score.
+     * Ici, si la position d'un joueur est invalide ou hors du plateau, le score est -1.
+     * Sinon, on combine plusieurs critères (distance au mur, liberté d'action, proximité des autres).
+     */
     public Map<Integer, Integer> evaluate() {
-        Map<Integer, Integer> scores_vector = new HashMap<>();
-        for(Map.Entry<Integer, Position> player : players.entrySet()) {
-            int id = player.getKey();
-            Position position = player.getValue();
-            int score = 0;
-            if(visited.contains(position) || isPlayerOut(id)) score = -1;
-            else {
+        Map<Integer, Integer> scores = new HashMap<>();
+        for (Map.Entry<Integer, Position> entry : players.entrySet()) {
+            int id = entry.getKey();
+            Position pos = entry.getValue();
+            int score;
+            if (!isValidPosition(pos) || isPlayerOut(id)) {
+                score = -1;
+            } else {
                 int s1 = evaluateDistanceToWall(id);
-                // System.out.print(s1 + " | ");
-                score += s1;
                 int s2 = evaluateLiberty(id);
-                score += s2;
-                // System.out.print(s2 + " | ");
                 int s3 = evaluateDistanceWithOthers(id);
-                // System.out.println(s3);
-                score += s3;
+                score = s1 + s2 + s3;
             }
-            scores_vector.put(id, score);
+            scores.put(id, score);
         }
-        return scores_vector;
+        return scores;
     }
-
+    
+    /**
+     * Calcule la distance minimale du joueur aux bords du plateau.
+     */
     public int evaluateDistanceToWall(int player_id) {
-        Position position = players.get(player_id);
-        int x = position.getCordX(), y = position.getCordY(), dist = Integer.MAX_VALUE;
-        dist = Math.min(dist, x);
-        dist = Math.min(dist, y);
-        dist = Math.min(dist, SIZE-x);
-        dist = Math.min(dist, SIZE-y);
+        Position pos = players.get(player_id);
+        int x = pos.getCordX(), y = pos.getCordY();
+        int dist = Math.min(Math.min(x, y), Math.min(SIZE - 1 - x, SIZE - 1 - y));
         return dist;
     }
-
+    
+    /**
+     * Évalue le nombre de cases accessibles à partir de la position du joueur (liberté de mouvement),
+     * en effectuant une recherche en largeur limitée à un certain nombre de niveaux.
+     */
     public int evaluateLiberty(int player_id) {
-        Set<Position> visited = new HashSet<>();
+        Set<Position> seen = new HashSet<>();
         Queue<Position> queue = new LinkedList<>();
-        queue.add(players.get(player_id));
-        visited.add(players.get(player_id));
-
-        int depth = 5;
+        Position start = players.get(player_id);
+        queue.add(start);
+        seen.add(start);
         int area = 0;
-
-        while (!queue.isEmpty()) {
-            Position current = queue.poll();
-            area++;
-
-            for (Direction dir : Direction.values()) {
-                Position neighbor = getNextPosition(current, dir);
-
-                // Vérifier si la position est valide et non occupée
-                if (isValidPosition(neighbor) && !visited.contains(neighbor)) {
-                    visited.add(neighbor);
-                    queue.add(neighbor);
+        int depth = 5;
+        while (!queue.isEmpty() && depth > 0) {
+            int levelSize = queue.size();
+            for (int i = 0; i < levelSize; i++) {
+                Position current = queue.poll();
+                area++;
+                for (Direction d : Direction.values()) {
+                    Position neighbor = getNextPosition(current, d);
+                    if (isValidPosition(neighbor) && !seen.contains(neighbor)) {
+                        seen.add(neighbor);
+                        queue.add(neighbor);
+                    }
                 }
             }
             depth--;
-            if(depth==0) break;
         }
         return area;
     }
-
-    private Position getNextPosition(Position pos, Direction dir) {
-        switch (dir) {
-            case LEFT: return Position.from(pos.getCordX() - 1, pos.getCordY());
-            case UP: return Position.from(pos.getCordX(), pos.getCordY() - 1);
-            case RIGHT: return Position.from(pos.getCordX() + 1, pos.getCordY());
-            case DOWN: return Position.from(pos.getCordX(), pos.getCordY() + 1);
+    
+    /**
+     * Calcule la distance minimale (Euclidienne) entre le joueur et les autres joueurs.
+     */
+    public int evaluateDistanceWithOthers(int player_id) {
+        Position p1 = players.get(player_id);
+        int minDist = Integer.MAX_VALUE;
+        for (Map.Entry<Integer, Position> entry : players.entrySet()) {
+            if (entry.getKey() == player_id) continue;
+            Position p2 = entry.getValue();
+            int dist = (int) Math.sqrt(Math.pow(p2.getCordX() - p1.getCordX(), 2) +
+                                        Math.pow(p2.getCordY() - p1.getCordY(), 2));
+            minDist = Math.min(minDist, dist);
+        }
+        return minDist;
+    }
+    
+    /**
+     * Retourne la position voisine à partir d'une position donnée et d'une direction.
+     */
+    public Position getNextPosition(Position pos, Direction d) {
+        int x = pos.getCordX(), y = pos.getCordY();
+        switch(d) {
+            case LEFT: return Position.from(x - 1, y);
+            case RIGHT: return Position.from(x + 1, y);
+            case UP: return Position.from(x, y - 1);
+            case DOWN: return Position.from(x, y + 1);
             default: return pos;
         }
     }
-
-    private boolean isValidPosition(Position pos) {
+    
+    /**
+     * Une position est valide si elle est dans le plateau et n'a pas encore été visitée.
+     */
+    public boolean isValidPosition(Position pos) {
         return pos.getCordX() >= 0 && pos.getCordX() < SIZE &&
-               pos.getCordY() >= 0 && pos.getCordY() < SIZE && !visited.contains(pos);
-    }
-
-    private int evaluateDistanceWithOthers(int player_id) {
-        int min_dist = Integer.MAX_VALUE;
-        Position p1 = players.get(player_id);
-        for(Map.Entry<Integer, Position> player2 : players.entrySet()) {
-           if(player_id == player2.getKey()) continue;
-           Position p2 = player2.getValue();
-           int dist = (int)Math.sqrt(Math.pow(p2.getCordX()-p1.getCordX(), 2)+Math.pow(p2.getCordY()-p1.getCordY(), 2));
-           min_dist = Math.min(min_dist, dist);
-        }
-        return min_dist;
+               pos.getCordY() >= 0 && pos.getCordY() < SIZE &&
+               !visited.contains(pos);
     }
 }

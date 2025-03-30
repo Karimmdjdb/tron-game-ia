@@ -2,6 +2,7 @@ package game.model.platform;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -25,6 +26,7 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     private Set<Position> visited;
     private Team team_A, team_B;
     private Set<Bike> alive_bikes;
+    private List<Integer> playerOrder;
 
     private Platform() {
         bikes = new ArrayList<>();
@@ -124,6 +126,32 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
     }
 
     public boolean isGameOver() {
-        return alive_bikes.isEmpty();
+        return alive_bikes.size() <= 1;
+    }
+
+    public void setPlayerOrder() {
+        playerOrder = new ArrayList<>();
+        for(Bike b : bikes) playerOrder.add(b.getId());
+        Collections.shuffle(playerOrder);
+    }
+
+    public List<Integer> getPlayerOrder() {
+        return playerOrder;
+    }
+
+    public List<Integer> getTeamAIds() {
+        List<Integer> ids = new ArrayList<>();
+        for(Bike b : team_A.getMembers()) {
+            ids.add(b.getId());
+        }
+        return ids;
+    }
+
+    public List<Integer> getTeamBIds() {
+        List<Integer> ids = new ArrayList<>();
+        for(Bike b : team_B.getMembers()) {
+            ids.add(b.getId());
+        }
+        return ids;
     }
 }

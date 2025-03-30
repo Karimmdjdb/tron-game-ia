@@ -1,63 +1,76 @@
 package game.algo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import game.model.entities.Bike;
 import game.model.platform.Direction;
 import game.model.platform.Platform;
 
 public class MaxN {
-
-    public static Direction simulate(Platform platform, int depth, int player_id) {
-        Map<Integer, Integer> alphas = new HashMap<>();
-        for(int id=1; id <= Bike.getPlayersNumber(); id++) {
-            alphas.put(id, Integer.MIN_VALUE);
-        }
-        return (Direction)maxn(new GameState(platform), depth, player_id, true, alphas);
+    /**
+     * Appel initial.
+     * @param platform    la plateforme de jeu
+     * @param depth       profondeur de recherche
+     * @param me_id       id du joueur qui choisit son coup.
+     * @return            meilleure direction
+     */
+    public static Direction search(Platform platform, int depth, int me_id) {
+        Map<Integer, Integer> res = search(
+                new GameState(platform),
+                depth,
+                platform.getPlayerOrder(),
+                platform.getPlayerOrder().indexOf(me_id),
+                new HashMap<>(),
+                true
+        );
+        if(res == null || res.get(0) == null) return Direction.DOWN;
+        return Direction.values()[res.get(0)];
     }
-
-    @SuppressWarnings("unchecked")
-    private static Object maxn(GameState game_state, int depth, int player_id, boolean is_first_call, Map<Integer, Integer> alphas_vector) {
-
-        // si c'est un noeud on retourne l'évaluation de l'état de jeu
-        if(depth == 0 || game_state.isTerminal()) {
-            return game_state.evaluate();
+    /**
+     * Recherche MAXN avec élagage alpha‑beta.
+     * @param state         l'état courant
+     * @param depth         profondeur restante
+     * @param player_order  liste ordonnée des identifiants des joueurs
+     * @param current_index indice du joueur courant dans playerOrder
+     * @param alpha         borne alpha (Map : player_id -> valeur)
+     * @return              vecteur de scores (Map : player_id -> score)
+     */
+    public static Map<Integer, Integer> search(GameState state, int depth, List<Integer> player_order, int current_index, Map<Integer, Integer> alpha, boolean is_first_call) {
+        int current_player = player_order.get(current_index);
+        if (depth == 0 || state.isTerminal()) {
+            return state.evaluate();
         }
-
-        // on calcule l'id du prochain joueur
-        int next_player_id = player_id % Bike.getPlayersNumber() + 1;
-
-        // si le joueur est éliminé il n'influence pas la suite du calcul
-        if(!game_state.canPlayerMove(player_id)) {
-            return (Map<Integer, Integer>)maxn(game_state, depth - 1, next_player_id, false, alphas_vector);
+        // Initialiser bestVector avec des valeurs très faibles
+        Map<Integer, Integer> best_vector = new HashMap<>();
+        for (Integer p : player_order) {
+            best_vector.put(p, Integer.MIN_VALUE);
         }
-
-        Map<Integer, Integer> best_vector = null;
-        Direction best_move = null;
-        Map<Integer, Integer> alphas_local = new HashMap<>(alphas_vector);
-
-        for(Direction direction : Direction.values()) {
-            game_state.simulateMove(player_id, direction);
-            Map<Integer, Integer> eval_vector = (Map<Integer, Integer>)maxn(game_state, depth - 1, next_player_id, false, alphas_local);
-            game_state.goBack(player_id);
-
-            if(best_vector == null || eval_vector.get(player_id) > best_vector.get(player_id)) {
-                best_vector = eval_vector;
-                best_move = direction;
-
-                int max_alpha = Math.max(alphas_local.get(player_id), best_vector.get(player_id));
-                alphas_local.put(player_id, max_alpha);
+        List<Direction> moves = state.legalMoves(current_player);
+        if (moves.isEmpty()) {
+            return state.evaluate();
+        }
+        Map<Integer, Integer> best_dir = null;
+        for (Direction move : moves) {
+            state.simulateMove(current_player, move);
+            // Copie de alpha pour la branche enfant
+            Map<Integer, Integer> child_alpha = new HashMap<>(alpha);
+            int next_index = (current_index + 1) % player_order.size();
+            Map<Integer, Integer> vector = search(state, depth - 1, player_order, next_index, child_alpha, false);
+            state.goBack(current_player);
+            // Mise à jour du vecteur bestVector pour le joueur courant
+            if (vector.get(current_player) > best_vector.get(current_player)) {
+                best_vector = vector;
+                best_dir = Map.of(0, move.ordinal());
             }
-
-            // if(best_vector.get(player_id) <= alphas_vector.get(player_id)) {
-            //     break;
-            // }
+            // Mise à jour de la borne alpha pour le joueur courant
+            int current_alpha = alpha.getOrDefault(current_player, Integer.MIN_VALUE);
+            if (best_vector.get(current_player) > current_alpha) {
+                alpha.put(current_player, best_vector.get(current_player));
+            }
+            // Vous pouvez insérer ici une condition de coupe adaptée pour MAXN
         }
 
-        if(is_first_call) return best_move;
-
+        if(is_first_call) return best_dir;
         return best_vector;
-
     }
 }

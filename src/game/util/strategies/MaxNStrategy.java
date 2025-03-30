@@ -5,9 +5,9 @@ import game.model.entities.Bot;
 import game.algo.MaxN;
 
 public class MaxNStrategy implements BotStrategy {
-    private static final int DEPTH = 5;
+    private static final int DEPTH = Integer.parseInt(game.util.config.ConfigReader.get("depth"));
     @Override
     public void play(Bot bot) {
-        bot.move(MaxN.simulate(Platform.getInstance(), DEPTH, bot.getId()));
+        bot.move(MaxN.search(Platform.getInstance(), DEPTH, bot.getId()));
     }
 }

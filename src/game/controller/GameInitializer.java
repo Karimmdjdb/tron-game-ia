@@ -26,19 +26,18 @@ public class GameInitializer {
         STRATEGY_TEAM2 = ConfigReader.get("team_2_strat");
     }
 
-   public static void init() {
-    Platform platform = Platform.getInstance();
+   public static void init(Platform platform) {
 
     Team teamA = new Team();
     Team teamB = new Team();
 
     for (int i = 0; i < NB_PLAYERS_TEAM1; i++) {
-        Bot bot = new Bot(platform.getRandomFreePosition(), createStrategy(STRATEGY_TEAM1));
+        Bot bot = new Bot(platform.getRandomFreePosition(), platform, createStrategy(STRATEGY_TEAM1));
         teamA.addMember(bot);
     }
 
     for (int i = 0; i < NB_PLAYERS_TEAM2; i++) {
-        Bot bot = new Bot(platform.getRandomFreePosition(), createStrategy(STRATEGY_TEAM2));
+        Bot bot = new Bot(platform.getRandomFreePosition(), platform, createStrategy(STRATEGY_TEAM2));
         teamB.addMember(bot);
     }
 

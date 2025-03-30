@@ -2,12 +2,11 @@ package game.util.strategies;
 
 import game.algo.Paranoid;
 import game.model.entities.Bot;
-import game.model.platform.Platform;
 
 public class ParanoidStrategy implements BotStrategy {
     private static final int DEPTH = 4;
     @Override
     public void play(Bot bot) {
-        bot.move(Paranoid.search(Platform.getInstance(), DEPTH, bot.getId()));
+        bot.move(Paranoid.search(bot.getPlatform(), DEPTH, bot.getId()));
     }
 }

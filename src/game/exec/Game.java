@@ -17,11 +17,11 @@ public class Game extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Platform platform = Platform.getInstance();
+        Platform platform = new Platform();
         Controller control = new Controller(platform);
 
         // Initialiser le jeu avec les stratégies sélectionnées
-        GameInitializer.init();
+        GameInitializer.init(platform);
 
         Group root = new Group();
 
@@ -36,7 +36,7 @@ public class Game extends Application {
 
         double width = 500;
         double height = 500;
-        Scene scene = new GameScene(root, width, height);
+        Scene scene = new GameScene(root, width, height, platform);
 
         stage.setScene(scene);
         stage.show();

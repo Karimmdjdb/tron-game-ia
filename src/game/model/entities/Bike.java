@@ -11,11 +11,13 @@ public class Bike extends game.util.mvc.AbstractObservable {
     private List<Position> streak;
     private boolean is_alive = true;
     private final int id;
+    private Platform platform;
 
-    public Bike(Position initial_position) {
+    public Bike(Position initial_position, Platform platform) {
         head = initial_position;
         streak = new ArrayList<>();
         id = ++total_bikes_number;
+        this.platform = platform;
     }
 
     public Position getHeadPosition() {
@@ -57,8 +59,6 @@ public class Bike extends game.util.mvc.AbstractObservable {
                 break;
         }
 
-        Platform platform = Platform.getInstance();
-
         // si la nouvelle position est valide alors on effectue le mouvement
         Position new_position = Position.from(new_cord_x, new_cord_y);
         streak.add(head);
@@ -73,5 +73,9 @@ public class Bike extends game.util.mvc.AbstractObservable {
 
     public static int getPlayersNumber() {
         return total_bikes_number;
+    }
+
+    public Platform getPlatform() {
+        return platform;
     }
 }

@@ -20,25 +20,16 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
         SIZE = Integer.parseInt(ConfigReader.get("platform_size"));
     }
 
-    private static Platform singleton;
-
     private List<Bike> bikes;
     private Set<Position> visited;
     private Team team_A, team_B;
     private Set<Bike> alive_bikes;
     private List<Integer> playerOrder;
 
-    private Platform() {
+    public Platform() {
         bikes = new ArrayList<>();
         visited = new HashSet<>();
         alive_bikes = new HashSet<>();
-    }
-
-    public static Platform getInstance() {
-        if(singleton == null) {
-            singleton = new Platform();
-        }
-        return singleton;
     }
 
     @Override

@@ -27,7 +27,7 @@ public class Controller {
 
             // fin du timer
             long fin = System.nanoTime();
-            System.out.println("Temps de calcul du tour : " + (fin - debut) / 1_000_000 + " ms");
+            // System.out.println("Temps de calcul du tour : " + (fin - debut) / 1_000_000 + " ms");
 
             // vérification des collisions des joueurs
             model.checkCollisions();

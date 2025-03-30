@@ -7,7 +7,6 @@ import game.model.entities.Bike;
 import game.model.platform.Platform;
 
 public class GameState {
-    private static final int SIZE = Platform.SIZE;
     
     // Position actuelle de chaque joueur (player_id -> Position)
     private Map<Integer, Position> players;
@@ -15,11 +14,13 @@ public class GameState {
     private Set<Position> visited;
     // Historique par joueur pour le backtracking
     private Map<Integer, Stack<Position>> history;
-
+    private final int SIZE;
+    
     public GameState(Platform platform) {
         players = new HashMap<>();
         visited = new HashSet<>();
         history = new HashMap<>();
+        SIZE = platform.getSize();
         // Pour chaque Bike, on enregistre sa position actuelle et ses cases déjà visitées
         for (Bike bike : platform.getBikes()) {
             players.put(bike.getId(), bike.getHeadPosition());

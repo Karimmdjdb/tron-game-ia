@@ -2,11 +2,10 @@
 platform_size = 50
 
 # numbers of bots in both teams
-team_1_nb_players = 2
-team_2_nb_players = 2
+nb_players_per_team = 4
 
 # algorithm of the players of both teams : maxn / paranoid / sos
-team_1_strat = sos
+team_1_strat = paranoid
 team_2_strat= sos
 
 # search depth of the algorithms

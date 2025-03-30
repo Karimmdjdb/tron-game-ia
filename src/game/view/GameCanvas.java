@@ -1,5 +1,6 @@
 package game.view;
 
+
 import game.model.entities.Bike;
 import game.model.platform.Platform;
 import game.model.platform.Position;
@@ -17,16 +18,31 @@ import game.util.mvc.Observer;
  * Classe qui spécialise la classe Canvas, ainsi qu'une vue de l'application.
  */
 public class GameCanvas extends Canvas implements Observer {
+    private static final Color
+                        BACKGROUND,
+                        TEAM1_ALIVE,
+                        TEAM1_DEAD,
+                        TEAM2_ALIVE,
+                        TEAM2_DEAD;
+    static {
+        BACKGROUND = Color.rgb(16, 16, 16);
+        TEAM1_ALIVE = Color.rgb(255, 87, 51, 1.0);
+        TEAM1_DEAD = Color.rgb(255, 87, 51, .2);
+        TEAM2_ALIVE = Color.rgb(51, 194, 255, 1.0);
+        TEAM2_DEAD = Color.rgb(51, 194, 255, .2);
+    }
     private GraphicsContext gc;
+    private Platform platform;
 
     /**
-     * Constructeur de la class.
+     * Constructeur de la classe.
      * @param width largeur du canvas
      * @param height hauteur du canvas
      */
-    public GameCanvas(double width, double height) {
+    public GameCanvas(double width, double height, Platform platform) {
         super(width, height);
-        Platform.getInstance().addObserver(this);
+        platform.addObserver(this);
+        this.platform = platform;
         gc = getGraphicsContext2D();
         draw();
     }
@@ -43,13 +59,12 @@ public class GameCanvas extends Canvas implements Observer {
      * Déssine les éléments du jeu dans le canvas.
      */
     public void draw() {
-        Platform platform = Platform.getInstance();
 
         // réinitialisation du canvas
         gc.clearRect(0, 0, getWidth(), getHeight());
 
         // dessin de l'arriére plan
-        gc.setFill(Color.rgb(1, 14, 17));
+        gc.setFill(BACKGROUND);
         gc.fillRect(0, 0, getWidth(), getHeight());
 
         // dessin des joueurs
@@ -65,8 +80,8 @@ public class GameCanvas extends Canvas implements Observer {
         // calcul des proportions
         double width = getWidth();
         double height = getHeight();
-        double sw = width / Platform.SIZE;
-        double sh = height / Platform.SIZE;
+        double sw = width / platform.getSize();
+        double sh = height / platform.getSize();
 
         // dessin
         double cord_x = bike.getHeadPosition().getCordX();
@@ -88,23 +103,27 @@ public class GameCanvas extends Canvas implements Observer {
         // gc.fillOval(cord_x*sw-10/2, cord_y*sh-10/2, 10*2, 10*2);
 
         gc.setFill(Color.WHITESMOKE);
-        gc.fillRect(cord_x*sw, cord_y*sh, 10, 10);
+        gc.fillRect(cord_x*sw, cord_y*sh, sw, sh);
     }
 
     private void drawStreak(Bike bike) {
         // calcul des proportions
         double width = getWidth();
         double height = getHeight();
-        double sw = width / Platform.SIZE;
-        double sh = height / Platform.SIZE;
+        double sw = width / platform.getSize();
+        double sh = height / platform.getSize();
 
         // dessin
         for(Position streak : bike.getStreakPositions()) {
-            if(Platform.getInstance().getTeamA().getMembers().contains(bike)) gc.setFill(Color.LIGHTCORAL);
-            if(Platform.getInstance().getTeamB().getMembers().contains(bike)) gc.setFill(Color.LIGHTBLUE);
+            if(platform.getTeamA().getMembers().contains(bike)){
+                gc.setFill(bike.isAlive() ? TEAM1_ALIVE : TEAM1_DEAD);
+            }
+            if(platform.getTeamB().getMembers().contains(bike)) {
+                gc.setFill(bike.isAlive() ? TEAM2_ALIVE : TEAM2_DEAD);
+            }
             double cord_x = streak.getCordX();
             double cord_y = streak.getCordY();
-            gc.fillRect(cord_x*sw, cord_y*sh, 10, 10);
+            gc.fillRect(cord_x*sw, cord_y*sh, sw, sh);
         }
     }
 

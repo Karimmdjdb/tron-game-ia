@@ -8,33 +8,29 @@ import java.util.Random;
 import java.util.Set;
 
 import game.model.entities.Bike;
-import game.util.config.ConfigReader;
+import game.util.config.Shared;
 
 public class Platform extends game.util.mvc.AbstractObservable implements game.util.mvc.Observer {
 
-    public final static Random random;
-    public final static int SIZE;
-
-    static {
-        random = new Random();
-        SIZE = Integer.parseInt(ConfigReader.get("platform_size"));
-    }
+    public final static Random random = new Random();
 
     private List<Bike> bikes;
     private Set<Position> visited;
     private Team team_A, team_B;
     private Set<Bike> alive_bikes;
     private List<Integer> playerOrder;
+    private int SIZE;
 
     public Platform() {
         bikes = new ArrayList<>();
         visited = new HashSet<>();
         alive_bikes = new HashSet<>();
+        SIZE = Shared.SIZE;
     }
 
     @Override
     public void update(game.util.mvc.Observable source) {
-        // fireChangements();
+        fireChangements();
     }
 
     public List<Bike> getBikes() {
@@ -144,5 +140,14 @@ public class Platform extends game.util.mvc.AbstractObservable implements game.u
             ids.add(b.getId());
         }
         return ids;
+    }
+
+    public Bike getWinner() {
+        if(isGameOver() && alive_bikes.size()==1) return alive_bikes.iterator().next();
+        return null;
+    }
+
+    public int getSize() {
+        return SIZE;
     }
 }

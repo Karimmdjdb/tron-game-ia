@@ -9,13 +9,13 @@ team_1_strat = maxn
 team_2_strat= sos
 
 # search depth of the algorithms
-depth = 4
+depth = 3
 
 # simulation parameters
-depth_steps = 3
+depth_steps = 2
 depth_delta = 1
-grid_size_steps = 4
+grid_size_steps = 2
 grid_size_delta = 10
-nb_players_steps = 4
+nb_players_steps = 2
 nb_players_delta = 1
-simulations_per_sample = 50
+simulations_per_sample = 5

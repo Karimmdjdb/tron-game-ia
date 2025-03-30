@@ -89,11 +89,13 @@ public class ConfigWindow extends Application {
         Button simulateButton = new Button("Simuler N parties");
         simulateButton.setStyle("-fx-font-size: 14px; -fx-padding: 10px 20px; -fx-background-color: #FF9800; -fx-text-fill: white;");
         simulateButton.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Simulation");
-            alert.setHeaderText(null);
-            alert.setContentText("Veuillez patienter...");
-            alert.showAndWait();
+            try {
+                WaitingWindow waiting = new WaitingWindow();
+                waiting.start(new Stage());
+                primaryStage.close();
+            } catch (Exception ex){
+                ex.printStackTrace();
+            }
         });
 
         HBox buttonsBox = new HBox(20);

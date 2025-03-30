@@ -68,8 +68,5 @@ public class Simulation {
             Shared.NB_PLAYERS = Integer.parseInt(ConfigReader.get("nb_players_per_team"));
             Shared.DEPTH += DEPTH_DELTA;
         }
-
-        // on affiche les résultats
-        DataVisualizer.main(args);
     }
 }

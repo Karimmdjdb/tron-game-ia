@@ -1,12 +1,11 @@
-# Tron AI – Java MVC with JavaFX
+# Tron AI – Game Decision Support Algorithms
 
 ![Java](https://img.shields.io/badge/Java-21+-red?style=flat&logo=openjdk&logoColor=white)
 ![JavaFX](https://img.shields.io/badge/JavaFX-UI-0f9d58?style=flat)
 ![Architecture](https://img.shields.io/badge/Architecture-MVC-blue?style=flat)
-![Algorithms](https://img.shields.io/badge/AI-Minimax%20%7C%20MaxN%20%7C%20Paranoid%20%7C%20SOS--inspired-6f42c1?style=flat)
+![Algorithms](https://img.shields.io/badge/AI-MaxN%20%7C%20Paranoid%20%7C%20SOS--inspired-6f42c1?style=flat)
 
 A university project that reimplements a Tron / multi-player Snake game in **MVC** with a **JavaFX** interface, and multiple **decision algorithms**:
-- Minimax (two-player),
 - MaxN (multi-player),
 - Paranoid (all others assumed to collude),
 - Team extensions inspired by SOS (cooperative evaluation/coordination for teams).
@@ -15,9 +14,15 @@ Benchmarks explore different algorithm combinations while varying **team sizes**
 
 ---
 
+## Preview
+
+![Tron Game preview](demo.gif)
+
+---
+
 ## Features
 
-- Clean **MVC** architecture with a **Router/Controller** layer coordinating Model and View.
+- Clean **MVC** architecture with a **Controller** layer coordinating Model and View.
 - **JavaFX** GUI for interactive runs; optional headless mode for benchmarks.
 - Pluggable AIs: Minimax, MaxN, Paranoid, and team-aware SOS-inspired variants.
 - Batch **benchmark harness** varying grid size, team size, search depth and sampling.
